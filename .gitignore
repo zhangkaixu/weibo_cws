@@ -1,0 +1,8 @@
+__pycache__/
+*.swp
+orginal/
+test.*
+training.*
+diff.html
+isan
+thulac
