@@ -46,11 +46,43 @@ class DiffToHTML:
 class Default_Features :
     def __init__(self):
         self.thulac=thulac.Predict_C()
+        self.chinese_characters=set(chr(i) for i in range(ord('一'),ord('鿋')+1))
+        self.punks=set('…。，？：；！/')
+        self.idioms=set()
+        for ln,line in enumerate(open("idiom.txt")):
+            ol=line
+            line=line.split()
+            if line:
+                self.idioms.add(line[0])
+
+        self.sww=set()
+        self.sww_pre=set()
+        for line in open("res/sww_idiom.txt"):
+            line=line.strip()
+            self.sww.add(line.strip)
+            for i in range(1,len(line)):
+                self.sww_pre.add(line[:i])
+            
+        self.sms=set()
+        for line in open("res/sms.txt"):
+            line=line.strip()
+            self.sms.add(line)
+
+
     def set_raw(self,raw):
         """
         对需要处理的句子做必要的预处理（如缓存特征）
         """
         self.raw=raw
+        self.raw_type=['##','##','##']
+        for ch in self.raw:
+            if ch in self.chinese_characters:
+                self.raw_type.append('CC')
+            elif ch in self.punks:
+                self.raw_type.append('PU')
+            else:
+                self.raw_type.append(ch)
+        self.raw_type+=['##','##']
         self.uni_chars=list('###'+raw+'##')
         self.bi_chars=[(self.uni_chars[i],self.uni_chars[i+1]) 
                 for i in range(len(self.uni_chars)-1)]
@@ -58,10 +90,15 @@ class Default_Features :
         #set thulac related features
         thulac_result=self.thulac(raw)
         #print(thulac_result)
-        self.lac_seq=['s']
+        self.lac_seq=[['s',None,thulac_result[0][1]]]
         for w,t in thulac_result:
-            for i in range(len(w)-1):self.lac_seq.append('c')
-            self.lac_seq.append('s')
+            self.lac_seq[-1][-1]=t
+            for i in range(len(w)-1):
+                self.lac_seq.append(['c',t,t])
+                if i==0:
+                    self.lac_seq[-1][1]+='0'
+            self.lac_seq.append(['s',t,None])
+        #print(self.lac_seq)
 
         if 0:
             print(raw)
@@ -87,16 +124,34 @@ class Default_Features :
                 ('l',uni_chars[c_ind-1],ws_current),
                 ("cr",bi_chars[c_ind],ws_current),
                 ("lc",bi_chars[c_ind-1],ws_current),
+                
                 ("rr2",bi_chars[c_ind+1],ws_current),
                 ("l2l",bi_chars[c_ind-2],ws_current),
             ]
-        fv+=[   ('pos',self.lac_seq[pos])
+        fv+=[   ('L',self.lac_seq[pos][0]),
+                ('Ll',self.lac_seq[pos][0],self.lac_seq[pos][1]),
+                ('Lr',self.lac_seq[pos][0],self.lac_seq[pos][2]),
+                ]
+        fv+=[   
+                ('Tc',self.raw_type[c_ind]),
+                ('Tl',self.raw_type[c_ind-1]),
+                ('Tr',self.raw_type[c_ind+1]),
+                ('Tlc',self.raw_type[c_ind-1],self.raw_type[c_ind]),
+                ('Tcr',self.raw_type[c_ind],self.raw_type[c_ind+1]),
                 ]
             
 
         if len(span)>=4:
             w_current=raw[span[0]-span[3]:span[0]]
             fv.append(("w",w_current))
+            fv.append(("wi",w_current in self.idioms))
+            fv.append(("wsww",w_current in self.sww))
+            fv.append(("wssm",w_current in self.sms))
+            if len(w_current)>1 and w_current in self.sww_pre:
+                fv.append(("winswwpre",len(w_current)))
+                #print(w_current)
+            else:
+                fv.append(("wnotswwpre",))
         return fv
 class Segmentation_Stats(perceptrons.Base_Stats):
     def __init__(self,actions,features):

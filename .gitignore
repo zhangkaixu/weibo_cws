@@ -1,6 +1,7 @@
 __pycache__/
 *.swp
 orginal/
+res/
 test.*
 training.*
 diff.html

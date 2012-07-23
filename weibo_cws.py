@@ -24,7 +24,7 @@ class Weibo_CWS:
         print(s)
         return s
 if __name__ == '__main__':
-    model=weibo_segger.Weibo_Model("model.bin",weibo_segger.Segmentation_Space())
+    model=weibo_segger.Weibo_Model("model.bin",weibo_segger.Segmentation_Space(beam_width=8))
     model.train("training.1.raw","training.1.result",10)
     model.test("test.1.raw","test.1.result")
 
