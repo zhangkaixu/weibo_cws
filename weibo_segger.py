@@ -49,7 +49,7 @@ class Default_Features :
         self.chinese_characters=set(chr(i) for i in range(ord('一'),ord('鿋')+1))
         self.punks=set('…。，？：；！/')
         self.idioms=set()
-        for ln,line in enumerate(open("idiom.txt")):
+        for ln,line in enumerate(open("res/idiom.txt")):
             ol=line
             line=line.split()
             if line:
