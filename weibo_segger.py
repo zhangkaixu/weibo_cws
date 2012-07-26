@@ -88,7 +88,8 @@ class Default_Features :
                 for i in range(len(self.uni_chars)-1)]
 
         #set thulac related features
-        thulac_result=self.thulac(raw)
+        thulac_result=self.thulac(raw,self.candidates)
+        #print(raw)
         #print(thulac_result)
         self.lac_seq=[['s',None,thulac_result[0][1]]]
         for w,t in thulac_result:
@@ -114,9 +115,6 @@ class Default_Features :
         ws_current=span[1]
         ws_left=span[2]
         pos=span[0]
-        #print(raw)
-        #print(len(raw))
-        #print(c_ind)
         fv=[
                 ("ws",ws_left,ws_current),
                 ("c",uni_chars[c_ind],ws_current),
@@ -146,7 +144,7 @@ class Default_Features :
             fv.append(("w",w_current))
             fv.append(("wi",w_current in self.idioms))
             fv.append(("wsww",w_current in self.sww))
-            fv.append(("wssm",w_current in self.sms))
+            fv.append(("wssm",w_current in self.sms,self.lac_seq[pos][1]))
             if len(w_current)>1 and w_current in self.sww_pre:
                 fv.append(("winswwpre",len(w_current)))
                 #print(w_current)
@@ -276,6 +274,7 @@ class Weibo_Model(perceptrons.Base_Model):
             std=[t for _,t in sorted(list(std))]
             raw,s=self.pre(line)
             self.schema.candidates=s
+            self.schema.features.candidates=s
             assert(len(s)==len(std))
             hat_y=self(raw)
             eval(y,hat_y)
@@ -299,6 +298,8 @@ class Weibo_Model(perceptrons.Base_Model):
                 std=[t for _,t in sorted(list(std))]
                 raw,s=self.pre(line)
                 self.schema.candidates=s
+                self.schema.features.candidates=s
+                
                 assert(len(s)==len(std))
                 
                 _,hat_y=self._learn_sentence(raw,y)
