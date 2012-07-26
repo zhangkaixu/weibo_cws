@@ -2,6 +2,7 @@ from isan.tagging.inc_segger import *
 import sys
 import pre
 import thulac
+import math
 class DiffToHTML:
     """
     用于生成HTML的diff文件的插件
@@ -67,6 +68,14 @@ class Default_Features :
         for line in open("res/sms.txt"):
             line=line.strip()
             self.sms.add(line)
+
+        self.sms_dict=dict()
+        for line in open("res/sms_dict.txt"):
+            word,freq,*dicts=line.split()
+            dicts=[int(x)for x in dicts]
+            freq=int(freq)
+
+            self.sms_dict[word]=[freq,dicts]
 
 
     def set_raw(self,raw):
@@ -150,6 +159,17 @@ class Default_Features :
                 #print(w_current)
             else:
                 fv.append(("wnotswwpre",))
+
+            dict_info=self.sms_dict.get(w_current,[0,[0,0,0,0,0,0,0]])
+            #fv.append(('d-',len(w_current),w_current in self.sms_dict))
+            fv.append(('d-f',len(w_current),math.floor(math.log(dict_info[0]+1))))
+            fv.append(('d-0',len(w_current),dict_info[1][0]))
+            fv.append(('d-1',len(w_current),dict_info[1][1]))
+            fv.append(('d-2',len(w_current),dict_info[1][2]))
+            fv.append(('d-3',len(w_current),dict_info[1][3]))
+            fv.append(('d-4',len(w_current),dict_info[1][4]))
+            fv.append(('d-5',len(w_current),dict_info[1][5]))
+            fv.append(('d-6',len(w_current),dict_info[1][6]))
         return fv
 class Segmentation_Stats(perceptrons.Base_Stats):
     def __init__(self,actions,features):
