@@ -156,24 +156,24 @@ class Segmentation_Stats(perceptrons.Base_Stats):
         self.actions=actions
         self.features=features
         #初始状态 (解析位置，上一个位置结果，上上个位置结果，当前词长)
-        self.init=(0,'|','|',0)
+        self.init=(0,'|','|',0,0)
     def gen_next_stats(self,stat):
         """
         由现有状态产生合法新状态
         """
-        ind,last,_,wordl=stat
-        yield 's',(ind+1,'s',last,1)
-        yield 'c',(ind+1,'c',last,wordl+1)
+        ind,last,_,wordl,lwordl=stat
+        yield 's',(ind+1,'s',last,1,wordl)
+        yield 'c',(ind+1,'c',last,wordl+1,lwordl)
 
     def _actions_to_stats(self,actions):
         stat=self.init
         for action in actions:
             yield stat
-            ind,last,_,wordl=stat
+            ind,last,_,wordl,lwordl=stat
             if action=='s':
-                stat=(ind+1,'s',last,1)
+                stat=(ind+1,'s',last,1,wordl)
             else:
-                stat=(ind+1,'c',last,wordl+1)
+                stat=(ind+1,'c',last,wordl+1,lwordl)
         yield stat
 
 class Segmentation_Space(perceptrons.Base_Decoder):
