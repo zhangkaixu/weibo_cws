@@ -48,7 +48,16 @@ class Default_Features :
     def __init__(self):
         self.thulac=thulac.Predict_C()
         self.chinese_characters=set(chr(i) for i in range(ord('一'),ord('鿋')+1))
-        self.punks=set('…。，？：；！/')
+        self.numbers=set()
+        for c in '0123456789':
+            self.numbers.add(c)
+            self.numbers.add(chr(ord(c)+65248))
+        self.latin=set()
+        for c in 'abcdefghijklmnopqrstuvwxyz':
+            self.latin.add(c)
+            self.latin.add(chr(ord(c)+65248))
+        #print(self.numbers)
+        self.punks=set('…。，？：；！/.')
         self.idioms=set()
         for ln,line in enumerate(open("res/idiom.txt")):
             ol=line
@@ -89,6 +98,10 @@ class Default_Features :
                 self.raw_type.append('CC')
             elif ch in self.punks:
                 self.raw_type.append('PU')
+            elif ch in self.latin:
+                self.raw_type.append('LT')
+            elif ch in self.numbers:
+                self.raw_type.append('NM')
             else:
                 self.raw_type.append(ch)
         self.raw_type+=['##','##']
@@ -96,19 +109,32 @@ class Default_Features :
         self.bi_chars=[(self.uni_chars[i],self.uni_chars[i+1]) 
                 for i in range(len(self.uni_chars)-1)]
 
-        #set thulac related features
+        #'''#set thulac related features'''
         thulac_result=self.thulac(raw,self.candidates)
-        #print(raw)
-        #print(thulac_result)
-        self.lac_seq=[['s',None,thulac_result[0][1]]]
-        for w,t in thulac_result:
-            self.lac_seq[-1][-1]=t
+        #for wt in thulac_result:
+        #    if len(wt[0])==1:
+        #        wt[1]+='1'
+        self.lac_seq=[['s',None,thulac_result[0][1],None]]
+        for i,wt in enumerate(thulac_result):
+            w,t=wt
+            if i-1>=0:
+                lw,lt=thulac_result[i-1]
+                if len(lw)==1 and lt=='np' and t=='np':
+                    #print(lw,w)
+                    self.lac_seq[-1][3]=True
+            self.lac_seq[-1][2]=t
             for i in range(len(w)-1):
-                self.lac_seq.append(['c',t,t])
-                if i==0:
-                    self.lac_seq[-1][1]+='0'
-            self.lac_seq.append(['s',t,None])
+                self.lac_seq.append(['c',t,t,None])
+                #if i==0:
+                #    if self.lac_seq[-1][1]:
+                #        self.lac_seq[-1][1]+='0'
+            self.lac_seq.append(['s',t,None,None])
         #print(self.lac_seq)
+        #if any(x[3] for x in self.lac_seq):
+        #    for c,x in zip(raw,self.lac_seq):
+        #        print(c,x)
+        #    print(' ')
+        #    input()
 
         if 0:
             print(raw)
@@ -135,9 +161,11 @@ class Default_Features :
                 ("rr2",bi_chars[c_ind+1],ws_current),
                 ("l2l",bi_chars[c_ind-2],ws_current),
             ]
-        fv+=[   ('L',self.lac_seq[pos][0]),
+        fv+=[   ('L','c' if self.lac_seq[pos][0]=='c' else self.lac_seq[pos][3]),
                 ('Ll',self.lac_seq[pos][0],self.lac_seq[pos][1]),
                 ('Lr',self.lac_seq[pos][0],self.lac_seq[pos][2]),
+                #('L3',self.lac_seq[pos][0],self.lac_seq[pos][3]),
+                #('Llr',pos>0 and self.lac_seq[pos-1][0]=='s' and self.lac_seq[pos][0]=='s' and self.lac_seq[pos][1]=='np' and self.lac_seq[pos][2]=='np'),
                 ]
         fv+=[   
                 ('Tc',self.raw_type[c_ind]),
@@ -160,7 +188,7 @@ class Default_Features :
             else:
                 fv.append(("wnotswwpre",))
 
-            dict_info=self.sms_dict.get(w_current,[0,[0,0,0,0,0,0,0]])
+            dict_info=self.sms_dict.get(w_current,[0,[0,0,0,0,0,0,0,0]])
             #fv.append(('d-',len(w_current),w_current in self.sms_dict))
             fv.append(('d-f',len(w_current),math.floor(math.log(dict_info[0]+1))))
             fv.append(('d-0',len(w_current),dict_info[1][0]))
@@ -170,6 +198,7 @@ class Default_Features :
             fv.append(('d-4',len(w_current),dict_info[1][4]))
             fv.append(('d-5',len(w_current),dict_info[1][5]))
             fv.append(('d-6',len(w_current),dict_info[1][6]))
+            #fv.append(('d-7',len(w_current),dict_info[1][7]))
         return fv
 class Segmentation_Stats(perceptrons.Base_Stats):
     def __init__(self,actions,features):
