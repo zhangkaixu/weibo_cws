@@ -328,6 +328,7 @@ class Weibo_Model(perceptrons.Base_Model):
             hat_y=self(raw)
             eval(y,hat_y)
         eval.print_result()#打印评测结果
+        return eval
     def train(self,training_raw,training_result,iteration=5):
         """
         训练

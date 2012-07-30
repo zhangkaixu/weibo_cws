@@ -42,11 +42,11 @@ class Pre:
                         s[offset+i+1]='c'
                     if piece[i] in self.latin and piece[i+1] in self.latin:
                         s[offset+i+1]='c'
-                stat=0
-                for i in range(len(piece)-1): # deal with -
-                    if piece[i]=='-' and piece[i+1]=='-':
-                        s[offset+i+1]='c'
+                #for i in range(len(piece)-1): # deal with -
+                #    if piece[i]=='-' and piece[i+1]=='-':
+                #        s[offset+i+1]='c'
 
+                stat=0
                 for i in range(len(piece)): # deal with ... and ......
                     if piece[i]=='.':
                         stat+=1

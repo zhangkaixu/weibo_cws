@@ -16,7 +16,7 @@ class Predict_C:
                 ('c','s'):'4',#e
                 ('c','c'):'2',#m
                 }
-        self.sp=subprocess.Popen(['./thulac/bin/thulac','../stack/','-p']
+        self.sp=subprocess.Popen(['./thulac/bin/thulac','./stack/','-p']
         #self.sp=subprocess.Popen(['./thulac/bin/predict_c','thulac/models/pku/model_c']
                                         ,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
     def __call__(self,raw,cands):

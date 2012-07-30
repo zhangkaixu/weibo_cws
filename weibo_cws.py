@@ -2,6 +2,7 @@
 import pre
 import isan.tagging.inc_segger
 import weibo_segger
+import sys
 
 
 """
@@ -14,19 +15,14 @@ using a rule based preprosess and an incremental CWS model
 """
 
 
-class Weibo_CWS:
-    def __init__(self):
-        self.pre=pre.Pre()
-        pass
-    def __call__(self,raw):
-        sen,s=self.pre(raw)
-        print(sen)
-        print(s)
-        return s
 if __name__ == '__main__':
+    if len(sys.argv)==1:
+        set_id='1'
+    else:
+        set_id=sys.argv[1]
     model=weibo_segger.Weibo_Model("model.bin",weibo_segger.Segmentation_Space(beam_width=8))
-    model.train("training.1.raw","training.1.result",10)
-    model.test("test.1.raw","test.1.result")
+    model.train("training.{0}.raw".format(set_id),"training.{0}.result".format(set_id),10)
+    model.test("test.{0}.raw".format(set_id),"test.{0}.result".format(set_id))
 
 
 
