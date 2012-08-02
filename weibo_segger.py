@@ -53,7 +53,7 @@ class Default_Features :
             self.numbers.add(c)
             self.numbers.add(chr(ord(c)+65248))
         self.latin=set()
-        for c in 'abcdefghijklmnopqrstuvwxyz':
+        for c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ':
             self.latin.add(c)
             self.latin.add(chr(ord(c)+65248))
         #print(self.numbers)
@@ -65,13 +65,31 @@ class Default_Features :
             if line:
                 self.idioms.add(line[0])
 
+        self.baidu=dict()
+        for line in open('res/baidu_count.txt'):
+            word,freq=line.split()
+            freq=int(freq)
+            self.baidu[word]=freq
+
+        self.SogouW=dict()
+        for line in open('res/SogouW.txt'):
+            word,freq,*tags=line.split()
+            freq=int(freq)
+            self.SogouW[word]=[freq,set(tags)]
+
+        self.sogou_input=dict()
+        for line in open('res/sogou_input.txt'):
+            word,f1,f2=line.split()
+            f1=int(f1)
+            f2=int(f2)
+            self.sogou_input[word]=[f1,f2]
+
+
+
         self.sww=set()
-        self.sww_pre=set()
         for line in open("res/sww_idiom.txt"):
             line=line.strip()
-            self.sww.add(line.strip)
-            for i in range(1,len(line)):
-                self.sww_pre.add(line[:i])
+            self.sww.add(line)
             
         self.sms=set()
         for line in open("res/sms.txt"):
@@ -103,7 +121,7 @@ class Default_Features :
             elif ch in self.numbers:
                 self.raw_type.append('NM')
             else:
-                self.raw_type.append(ch)
+                self.raw_type.append('Other')
         self.raw_type+=['##','##']
         self.uni_chars=list('###'+raw+'##')
         self.bi_chars=[(self.uni_chars[i],self.uni_chars[i+1]) 
@@ -111,9 +129,12 @@ class Default_Features :
 
         #'''#set thulac related features'''
         thulac_result=self.thulac(raw,self.candidates)
-        #for wt in thulac_result:
-        #    if len(wt[0])==1:
-        #        wt[1]+='1'
+        for wt in thulac_result:
+            w,t=wt
+            if all(c not in self.chinese_characters and c not in self.punks and
+                    c not in self.latin and c not in self.numbers for c in w):
+                #print(w,t)
+                wt[1]='ww'
         self.lac_seq=[['s',None,thulac_result[0][1],None]]
         for i,wt in enumerate(thulac_result):
             w,t=wt
@@ -173,20 +194,37 @@ class Default_Features :
                 ('Tr',self.raw_type[c_ind+1]),
                 ('Tlc',self.raw_type[c_ind-1],self.raw_type[c_ind]),
                 ('Tcr',self.raw_type[c_ind],self.raw_type[c_ind+1]),
+                #('Tlcr',self.raw_type[c_ind-1],self.raw_type[c_ind],self.raw_type[c_ind+1]),
+                #('Tl2lc',self.raw_type[c_ind-2],self.raw_type[c_ind-1],self.raw_type[c_ind]),
+                #('Tcrr2',self.raw_type[c_ind],self.raw_type[c_ind+1],self.raw_type[c_ind+2]),
                 ]
             
 
         if len(span)>=4:
             w_current=raw[span[0]-span[3]:span[0]]
             fv.append(("w",w_current))
+            
+            #fv.append(("w",w_current[-1]=='化'))
+            #fv.append(("w",w_current[-1]=='性'))
+            #fv.append(("w",w_current[-1]=='们'))
+
             fv.append(("wi",w_current in self.idioms))
             fv.append(("wsww",w_current in self.sww))
-            fv.append(("wssm",w_current in self.sms,self.lac_seq[pos][1]))
-            if len(w_current)>1 and w_current in self.sww_pre:
-                fv.append(("winswwpre",len(w_current)))
-                #print(w_current)
-            else:
-                fv.append(("wnotswwpre",))
+
+            wl=span[0]-span[3]
+            if span[3]>1 and wl+4<len(raw):
+                #print(raw[wl:wl+4],len(self.sww))
+                if raw[wl:wl+4] in self.idioms:
+                    fv.append(("idioms,pre",len(w_current)))
+                else:
+                    fv.append(("idioms,not",len(w_current)))
+                if raw[wl:wl+4] in self.sww:
+                    fv.append(("sww,pre",len(w_current)))
+                else:
+                    fv.append(("sww,not",len(w_current)))
+            
+
+            fv.append(("wsms",w_current in self.sms,self.lac_seq[pos][1]))
 
             dict_info=self.sms_dict.get(w_current,[0,[0,0,0,0,0,0,0,0]])
             #fv.append(('d-',len(w_current),w_current in self.sms_dict))
@@ -199,6 +237,43 @@ class Default_Features :
             fv.append(('d-5',len(w_current),dict_info[1][5]))
             fv.append(('d-6',len(w_current),dict_info[1][6]))
             #fv.append(('d-7',len(w_current),dict_info[1][7]))
+
+            sgW_info=self.SogouW.get(w_current,[0,set()])
+            #fv.append(('sgW',len(w_current),sgW_info[0]>0))
+            fv.append(('sgW.t',len(w_current),1 if sgW_info[1] else 0))
+            #fv.append(('sgW.t.n',len(w_current),1 if 'N' in sgW_info[1] else 0))
+            #fv.append(('sgW.t.v',len(w_current),1 if 'V' in sgW_info[1] else 0))
+            #fv.append(('sgW.t.adj',len(w_current),1 if 'ADJ' in sgW_info[1] else 0))
+            #fv.append(('sgW.t.pron',len(w_current),1 if 'PRON' in sgW_info[1] else 0))
+            #fv.append(('sgW.t.adv',len(w_current),1 if 'ADV' in sgW_info[1] else 0))
+            #fv.append(('sgW.t.conj',len(w_current),1 if 'CONJ' in sgW_info[1] else 0))
+            #fv.append(('sgW.t.prep',len(w_current),1 if 'PREP' in sgW_info[1] else 0))
+            fv.append(('baidu',len(w_current),math.floor(math.log(self.baidu.get(w_current,0)+1))))
+
+            si_info=self.sogou_input.get(w_current,[0,0])
+            si_info=[math.floor(math.log(si_info[0]+1)),
+                    math.floor(math.log(si_info[1]+1))]
+            fv.append(('si',len(w_current),si_info[0],si_info[1]))
+            #print('si',w_current,si_info[0],si_info[1])
+
+            
+        if len(span)>=5:
+            w_left=raw[span[0]-span[3]-span[4]:span[0]-span[3]]
+            fv.append(("wl:w",w_left,w_current))
+            #fv.append(("wl.l:w",len(w_left),w_current))
+            #fv.append(("wl:w.l",w_left,len(w_current)))
+            #fv.append(("wl.l:w.l",len(w_left),len(w_current)))
+            #w_two=w_left+w_current
+            #dict_info_two=self.sms_dict.get(w_two,[0,[0,0,0,0,0,0,0,0]])
+            #fv.append(('d2-f',len(w_two),math.floor(math.log(dict_info_two[0]+1))))
+            #fv.append(('d2-0',len(w_two),dict_info_two[1][0]))
+            #fv.append(('d2-1',len(w_two),dict_info_two[1][1]))
+            #fv.append(('d2-2',len(w_two),dict_info_two[1][2]))
+            #fv.append(('d2-3',len(w_two),dict_info_two[1][3]))
+            #fv.append(('d2-4',len(w_two),dict_info_two[1][4]))
+            #fv.append(('d2-5',len(w_two),dict_info_two[1][5]))
+            #fv.append(('d2-6',len(w_two),dict_info_two[1][6]))
+            
         return fv
 class Segmentation_Stats(perceptrons.Base_Stats):
     def __init__(self,actions,features):
