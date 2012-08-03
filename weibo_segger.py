@@ -213,7 +213,6 @@ class Default_Features :
 
             wl=span[0]-span[3]
             if span[3]>1 and wl+4<len(raw):
-                #print(raw[wl:wl+4],len(self.sww))
                 if raw[wl:wl+4] in self.idioms:
                     fv.append(("idioms,pre",len(w_current)))
                 else:
