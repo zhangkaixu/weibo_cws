@@ -6,7 +6,7 @@ import weibo_segger
 import sys
 
 
-N=5
+N=10
 fmt="./isan/utls/divde.py {0}:training.{0}.{3} {1}:test.{0}.{3} {2}:training.{0}.{3} < training.{3}"
 f1s=[]
 for i in range(N):

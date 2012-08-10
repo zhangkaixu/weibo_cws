@@ -5,7 +5,7 @@ import os
 
 
 class Predict_C:
-    def __init__(self):# b m e s = 1 2 4 8
+    def __init__(self,model_path='./stack/'):# b m e s = 1 2 4 8
         self.poc_map={(None,None):'f',
                 (None,'s'):'c',#e s
                 (None,'c'):'3',#b m
@@ -16,7 +16,7 @@ class Predict_C:
                 ('c','s'):'4',#e
                 ('c','c'):'2',#m
                 }
-        self.sp=subprocess.Popen(['./thulac/bin/thulac','./stack/','-p']
+        self.sp=subprocess.Popen(['./thulac/bin/thulac',model_path,'-p']
         #self.sp=subprocess.Popen(['./thulac/bin/predict_c','thulac/models/pku/model_c']
                                         ,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
     def __call__(self,raw,cands):
@@ -36,7 +36,7 @@ class Predict_C:
 
 
 if __name__ == '__main__':
-    model=Predict_C()
-    r=model('鱼上钩了，那是因为鱼爱上了渔夫，它愿用生命来博渔夫一笑。')
+    model=Predict_C('thulac/models/sanku/')
+    r=model('鱼上钩了',[None,None,None,None,None])
     print(r)
 

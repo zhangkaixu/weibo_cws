@@ -46,7 +46,9 @@ class DiffToHTML:
         
 class Default_Features :
     def __init__(self):
+        #self.thulac=thulac.Predict_C()
         self.thulac=thulac.Predict_C()
+        #self.sanku=thulac.Predict_C('thulac/models/sanku/')
         self.chinese_characters=set(chr(i) for i in range(ord('一'),ord('鿋')+1))
         self.numbers=set()
         for c in '0123456789':
@@ -128,7 +130,10 @@ class Default_Features :
                 for i in range(len(self.uni_chars)-1)]
 
         #'''#set thulac related features'''
+        #print(raw)
         thulac_result=self.thulac(raw,self.candidates)
+        #sanku_result=self.sanku(raw,self.candidates)
+        #print(thulac_result)
         for wt in thulac_result:
             w,t=wt
             if all(c not in self.chinese_characters and c not in self.punks and
@@ -146,22 +151,21 @@ class Default_Features :
             self.lac_seq[-1][2]=t
             for i in range(len(w)-1):
                 self.lac_seq.append(['c',t,t,None])
-                #if i==0:
-                #    if self.lac_seq[-1][1]:
-                #        self.lac_seq[-1][1]+='0'
             self.lac_seq.append(['s',t,None,None])
-        #print(self.lac_seq)
-        #if any(x[3] for x in self.lac_seq):
-        #    for c,x in zip(raw,self.lac_seq):
-        #        print(c,x)
-        #    print(' ')
-        #    input()
 
-        if 0:
-            print(raw)
-            print(thulac_result)
-            print(self.lac_seq)
-            input()
+        #self.sanku_seq=[['s',None,sanku_result[0][1],None]]
+        #for i,wt in enumerate(sanku_result):
+        #    w,t=wt
+        #    if i-1>=0:
+        #        lw,lt=sanku_result[i-1]
+        #        if len(lw)==1 and lt=='np' and t=='np':
+        #            #print(lw,w)
+        #            self.sanku_seq[-1][3]=True
+        #    self.sanku_seq[-1][2]=t
+        #    for i in range(len(w)-1):
+        #        self.sanku_seq.append(['c',t,t,None])
+        #    self.sanku_seq.append(['s',t,None,None])
+
 
     def __call__(self,span):
         raw=self.raw
@@ -185,9 +189,11 @@ class Default_Features :
         fv+=[   ('L','c' if self.lac_seq[pos][0]=='c' else self.lac_seq[pos][3]),
                 ('Ll',self.lac_seq[pos][0],self.lac_seq[pos][1]),
                 ('Lr',self.lac_seq[pos][0],self.lac_seq[pos][2]),
-                #('L3',self.lac_seq[pos][0],self.lac_seq[pos][3]),
-                #('Llr',pos>0 and self.lac_seq[pos-1][0]=='s' and self.lac_seq[pos][0]=='s' and self.lac_seq[pos][1]=='np' and self.lac_seq[pos][2]=='np'),
                 ]
+        #fv+=[   ('skL','c' if self.sanku_seq[pos][0]=='c' else self.sanku_seq[pos][3]),
+        #        ('skLl',self.sanku_seq[pos][0],self.sanku_seq[pos][1]),
+        #        ('skLr',self.sanku_seq[pos][0],self.sanku_seq[pos][2]),
+        #        ]
         fv+=[   
                 ('Tc',self.raw_type[c_ind]),
                 ('Tl',self.raw_type[c_ind-1]),
