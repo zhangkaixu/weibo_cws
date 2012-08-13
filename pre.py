@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import re
+import isan.common.Chinese as Chinese
 class Pre:
     """
     使用基于规则的方法
@@ -14,24 +16,30 @@ class Pre:
         for i in range(ord('0'),ord('9')+1):
             self.digit.add(chr(i))
         #print(self.digit)
+        self.html=re.compile(r'''http://t\.cn/[0-9a-zA-Z]+''')
     def __call__(self,raw):
         """
         输入生句子，输出部分可以确定的切分结果
         """
         raw=raw.split()
         sen=''.join(raw)
+        #print(raw)
         s=set()
         s=dict()
         offset=0
         for piece in raw:
             s[offset]='s'
-            if piece.startswith("http://t.cn/"):#deal with urls
+            if False and piece.startswith("http://t.cn/"):#deal with urls
+                #print('start')
+                #input()
                 for i in range(1,len(piece)):
                     if i<12 or piece[i] in self.latin or piece[i] in self.digit:
                         s[offset+i]='c'
                     else:
                         s[offset+i]='s'
+                        #print('end',s[offset+i],offset+i)
                         break
+                s[offset+i]='s'
             else:
                 for i,x in enumerate(piece): # deal with puncs that should always be separated
                     if x in '【】[]《》\'()（），、；“”~？！#@|':
@@ -76,11 +84,24 @@ class Pre:
                         if stat>1:s[offset+i]='s'
                         stat=0
                 # deal with ^_^ ^0^ ^o^ !!
+            for mo in self.html.finditer(piece):
+                #print(s.get(offset+mo.start(),None),'s')
+                #print(s.get(offset+mo.end(),None),'s')
+                #s[offset+mo.start()]='s'
+                #s[offset+mo.end()]='s'
+                for i in range(mo.start()+1,mo.end()):
+                    #print(s.get(offset+i,None),'c')
+                    s[offset+i]='c'
+                #print(mo.group(0),mo.start(),mo.end())
+                #print(piece[mo.start():mo.end()],mo.group(0))
             s[offset+len(piece)]='s'
             offset+=len(piece)
         s[0]='s'
         s[len(sen)]='s'
         s=[s.get(i,None) for i in range(len(sen)+1)]
+        #print(sen)
+        #print(Chinese.to_full(sen))
+        #sen=Chinese.to_full(sen)
         return sen,s # 返回生句子，以及分、合约束
 
 

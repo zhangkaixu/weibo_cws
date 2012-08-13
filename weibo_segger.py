@@ -394,7 +394,7 @@ class Weibo_Model(perceptrons.Base_Model):
         """
         测试
         """
-        eval=self.Eval([DiffToHTML('diff.html')])
+        eval=self.Eval([DiffToHTML(test_result+'.html')])
         for line,std in zip(open(test_raw),open(test_result)):#迭代每个句子
             line=line.strip()
             std=std.split()
