@@ -3,6 +3,7 @@ import subprocess
 import sys
 import os
 import pre
+import isan.common.Chinese as Chinese
 
 
 class Predict_C:
@@ -22,12 +23,14 @@ class Predict_C:
                                         ,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
         #result=self.sp.stdout.readline().decode().strip()
         #print(">>",result)
-    def __call__(self,raw):
+    def __call__(self,raw,candidates=None):
         #self.pre(raw)
         raw,cands=self.pre(raw)
+        raw=Chinese.to_full(raw)
         pocs=[]
         for i in range(len(cands)-1):
             pocs.append(self.poc_map[(cands[i],cands[i+1])])
+        if candidates:cands=candidates
         pocs=''.join(pocs)
         self.sp.stdin.write((pocs+' '+raw+'\n').encode())
         #print(pocs+' '+raw+'\n')
