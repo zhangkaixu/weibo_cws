@@ -25,7 +25,7 @@ class Predict_C:
         for i in range(len(cands)-1):
             pocs.append(self.poc_map[(cands[i],cands[i+1])])
         pocs=''.join(pocs)
-        raw=Chinese.to_full(raw)
+        #raw=Chinese.to_full(raw)
         self.sp.stdin.write((pocs+' '+raw+'\n').encode())
         self.sp.stdin.flush()
         result=self.sp.stdout.readline().decode().strip()

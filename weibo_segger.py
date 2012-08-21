@@ -195,9 +195,19 @@ class Default_Features :
                 ("cr",bi_chars[c_ind],ws_current),
                 ("lc",bi_chars[c_ind-1],ws_current),
                 
-                #("rr2",bi_chars[c_ind+1],ws_current),
-                #("l2l",bi_chars[c_ind-2],ws_current),
+                ("rr2",bi_chars[c_ind+1],ws_current),
+                ("l2l",bi_chars[c_ind-2],ws_current),
             ]
+        #fv+=[
+        #        ("c'",uni_chars[c_ind],ws_left,ws_current),
+        #        ("r'",uni_chars[c_ind+1],ws_left,ws_current),
+        #        ("l'",uni_chars[c_ind-1],ws_left,ws_current),
+        #        ("cr'",bi_chars[c_ind],ws_left,ws_current),
+        #        ("lc'",bi_chars[c_ind-1],ws_left,ws_current),
+        #        
+        #        ("rr2'",bi_chars[c_ind+1],ws_left,ws_current),
+        #        ("l2l'",bi_chars[c_ind-2],ws_left,ws_current),
+        #    ]
         fv+=[   ('L','c' if self.lac_seq[pos][0]=='c' else self.lac_seq[pos][3]),
                 ('Ll',self.lac_seq[pos][0],self.lac_seq[pos][1]),
                 ('Lr',self.lac_seq[pos][0],self.lac_seq[pos][2]),
@@ -222,16 +232,16 @@ class Default_Features :
 
         if len(span)>=4:
             w_current=raw[span[0]-span[3]:span[0]]
+            wl=span[0]-span[3]
             fv.append(("w",w_current))
             
-            #fv.append(("w",w_current[-1]=='化'))
-            #fv.append(("w",w_current[-1]=='性'))
-            #fv.append(("w",w_current[-1]=='们'))
+            #fv.append("")
+            #if w_current:
+            #    fv.append(("w1",wl,w_current[-1]))
 
             fv.append(("wi",w_current in self.idioms))
             fv.append(("wsww",w_current in self.sww))
 
-            wl=span[0]-span[3]
             if span[3]>1 and wl+4<len(raw):
                 if raw[wl:wl+4] in self.idioms:
                     fv.append(("idioms,pre",len(w_current)))

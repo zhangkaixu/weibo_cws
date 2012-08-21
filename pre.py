@@ -29,7 +29,7 @@ class Pre:
         offset=0
         for piece in raw:
             s[offset]='s'
-            if False and piece.startswith("http://t.cn/"):#deal with urls
+            if piece.startswith("http://t.cn/"):#deal with urls
                 #print('start')
                 #input()
                 for i in range(1,len(piece)):
@@ -39,7 +39,6 @@ class Pre:
                         s[offset+i]='s'
                         #print('end',s[offset+i],offset+i)
                         break
-                s[offset+i]='s'
             else:
                 for i,x in enumerate(piece): # deal with puncs that should always be separated
                     if x in '【】[]《》\'()（），、；“”~？！#@|':
@@ -85,6 +84,7 @@ class Pre:
                         stat=0
                 # deal with ^_^ ^0^ ^o^ !!
             for mo in self.html.finditer(piece):
+                break
                 #print(s.get(offset+mo.start(),None),'s')
                 #print(s.get(offset+mo.end(),None),'s')
                 #s[offset+mo.start()]='s'
