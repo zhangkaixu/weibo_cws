@@ -87,8 +87,8 @@ class Pre:
                 break
                 #print(s.get(offset+mo.start(),None),'s')
                 #print(s.get(offset+mo.end(),None),'s')
-                #s[offset+mo.start()]='s'
-                #s[offset+mo.end()]='s'
+                s[offset+mo.start()]='s'
+                s[offset+mo.end()]='s'
                 for i in range(mo.start()+1,mo.end()):
                     #print(s.get(offset+i,None),'c')
                     s[offset+i]='c'

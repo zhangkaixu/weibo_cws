@@ -89,6 +89,11 @@ class Default_Features :
             self.sogou_input[word]=[f1,f2]
 
 
+        self.sms_person=set()
+        for line in open("res/sms_person.txt"):
+            line=line.strip()
+            self.sms_person.add(line)
+
 
         self.sww=set()
         for line in open("res/sww_idiom.txt"):
@@ -125,7 +130,8 @@ class Default_Features :
             elif ch in self.numbers:
                 self.raw_type.append('NM')
             else:
-                self.raw_type.append('Other')
+                #self.raw_type.append('Other')
+                self.raw_type.append(ch)
         self.raw_type+=['##','##']
         self.uni_chars=list('###'+raw+'##')
         self.bi_chars=[(self.uni_chars[i],self.uni_chars[i+1]) 
@@ -146,20 +152,33 @@ class Default_Features :
 
         #print(weibo_result)
         #print(thulac_result)
-        for wt in thulac_result:
+        
+        for w,t in thulac_result :
+            pass
+            #print(w,t)
+
+        for wt in thulac_result :
             w,t=wt
             if all(c not in self.chinese_characters and c not in self.punks and
                     c not in self.latin and c not in self.numbers for c in w):
                 #print(w,t)
                 wt[1]='ww'
+
         self.lac_seq=[['s',None,thulac_result[0][1],None]]
         for i,wt in enumerate(thulac_result):
             w,t=wt
             if i-1>=0:
                 lw,lt=thulac_result[i-1]
                 if len(lw)==1 and lt=='np' and t=='np':
-                    #print(lw,w)
-                    self.lac_seq[-1][3]=True
+                    self.lac_seq[-1][3]="name"
+                    if(lw in self.chinese_characters
+                            and all(c in self.chinese_characters for c in w)):
+                        #print("name",lw,w)
+                        if lw+w in self.sms_person:
+                            pass
+                            #self.lac_seq[-1][3]="namesms"
+                            #print("name sms",lw,w)
+
             self.lac_seq[-1][2]=t
             for i in range(len(w)-1):
                 self.lac_seq.append(['c',t,t,None])
